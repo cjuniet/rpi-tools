@@ -3,9 +3,6 @@
 #include <string.h>
 #include <unistd.h>
 
-//  LAVG CPU% MEM%
-// "9.99 100% 100%"
-
 #define BUFSIZE 64
 
 int g_delay = 1000000;
@@ -59,7 +56,7 @@ size_t get_cpu(char *buf, size_t len)
 
   used = usedB - usedA;
   total = used + (unusedB - unusedA);
-  n = snprintf(buf, len, "C:%d%% ", (int)(0.5 + 100.0 * used / total));
+  n = snprintf(buf, len, "C:%d%% ", (int)(100.0 * used / total));
 
   return n;
 }
@@ -83,7 +80,7 @@ size_t get_mem(char *buf, size_t len)
   total = get_mem_next_value(fp);
   used = total - get_mem_next_value(fp);
 
-  n = snprintf(buf, len, "M:%d%% ", (int)(0.5 + 100.0 * used / total));
+  n = snprintf(buf, len, "M:%d%% ", (int)(100.0 * used / total));
 
   fclose(fp);
 
@@ -95,9 +92,11 @@ int main(int argc, char *argv[])
   char buf[BUFSIZE];
   size_t len = 0;
 
+  // you can give the cpu stats polling interval in seconds
+  // it will be capped between 1,000,000 usec and 10,000,000 usec
   if (argc > 1) {
     g_delay = atoi(argv[1]) * 1000000;
-    if (g_delay < 1000000) g_delay = 1000000;
+    if (g_delay <  1000000) g_delay =  1000000;
     if (g_delay > 10000000) g_delay = 10000000;
   }
 
@@ -108,7 +107,7 @@ int main(int argc, char *argv[])
   len += get_mem(buf + len, BUFSIZE - len);
 
   buf[len-1] = '\0'; // eat last space
-  printf("%s", buf);
+  printf("%s", buf); // no new line!
 
   return 0;
 }
