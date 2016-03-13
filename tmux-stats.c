@@ -82,8 +82,9 @@ size_t get_mem(char *buf, size_t len)
   if (fp == NULL) exit(EXIT_FAILURE);
 
   // get the total and free memory values
-  total = get_mem_next_value(fp);
-  used = total - get_mem_next_value(fp);
+  total = get_mem_next_value(fp); // get MemTotal
+  get_mem_next_value(fp); // discard MemFree
+  used = total - get_mem_next_value(fp); // get MemAvailable
 
   n = snprintf(buf, len, "M:%d%% ", (int)(100.0 * used / total));
 
