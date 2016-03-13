@@ -92,6 +92,20 @@ size_t get_mem(char *buf, size_t len)
   return n;
 }
 
+size_t get_temp(char *buf, size_t len)
+{
+  char line[BUFSIZE];
+  size_t n = 0;
+  FILE *fp = fopen("/sys/class/thermal/thermal_zone0/temp", "r");
+  if (fp == NULL) exit(EXIT_FAILURE);
+
+  fgets(line, BUFSIZE, fp);
+  n = snprintf(buf, len, "T:%dC ", (int)(atoi(line)/1000.0+0.5));
+
+  fclose(fp);
+  return n;
+}
+
 int main(int argc, char *argv[])
 {
   char buf[BUFSIZE];
@@ -110,6 +124,8 @@ int main(int argc, char *argv[])
   len += get_cpu(buf + len, BUFSIZE - len);
 
   len += get_mem(buf + len, BUFSIZE - len);
+
+  len += get_temp(buf + len, BUFSIZE - len);
 
   buf[len-1] = '\0'; // eat last space
   printf("%s", buf); // no new line!
