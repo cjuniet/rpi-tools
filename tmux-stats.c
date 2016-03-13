@@ -10,7 +10,7 @@
 
 #define BUFSIZE 64
 
-int g_delay = 1000000;
+#define DEFAULT_CPU_DELAY 500000 // 1 sec breaks tmux status-interval
 
 size_t get_load(char *buf, size_t len)
 {
@@ -47,7 +47,7 @@ void get_cpu_usage(int *used, int *unused)
   fclose(fp);
 }
 
-size_t get_cpu(char *buf, size_t len)
+size_t get_cpu(char *buf, size_t len, int delay)
 {
   size_t n = 0;
   int usedA, unusedA, usedB, unusedB;
@@ -55,7 +55,7 @@ size_t get_cpu(char *buf, size_t len)
 
   get_cpu_usage(&usedA, &unusedA);
 
-  usleep(g_delay);
+  usleep(delay);
 
   get_cpu_usage(&usedB, &unusedB);
 
@@ -113,15 +113,16 @@ int main(int argc, char *argv[])
 
   // you can give the cpu stats polling interval in seconds
   // it will be capped between 1,000,000 usec and 10,000,000 usec
+  int delay = DEFAULT_CPU_DELAY;
   if (argc > 1) {
-    g_delay = atoi(argv[1]) * 1000000;
-    if (g_delay <  1000000) g_delay =  1000000;
-    if (g_delay > 10000000) g_delay = 10000000;
+    delay = atoi(argv[1]) * 1000000;
+    if (delay <  1000000) delay =  1000000;
+    if (delay > 10000000) delay = 10000000;
   }
 
   len += get_load(buf + len, BUFSIZE - len);
 
-  len += get_cpu(buf + len, BUFSIZE - len);
+  len += get_cpu(buf + len, BUFSIZE - len, delay);
 
   len += get_mem(buf + len, BUFSIZE - len);
 
